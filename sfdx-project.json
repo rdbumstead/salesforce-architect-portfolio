@@ -1,0 +1,36 @@
+{
+  "packageDirectories": [
+	{
+      "path": "packages/shared-modules",
+      "package": "shared-modules",
+      "default": false,
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT"
+    },
+    {
+      "path": "packages/integration-api",
+      "package": "integration-api",
+      "default": false,
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT"
+    },
+    {
+      "path": "packages/employer-hub-demo",
+      "package": "employer-hub-demo",
+      "default": false,
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT"
+    },
+    {
+      "path": "packages/portfolio-site",
+      "package": "portfolio-site",
+      "default": true,
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT"
+    }
+  ],
+  "name": "salesforce-architect-portfolio",
+  "namespace": "",
+  "sfdcLoginUrl": "https://login.salesforce.com",
+  "sourceApiVersion": "64.0"
+}
