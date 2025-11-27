@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Pillar_Label__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE(Pillar__c,
+    &quot;A&quot;, &quot;Pillar A: Business Architecture&quot;,
+    &quot;B&quot;, &quot;Pillar B: Pre-Sales Consultancy&quot;,
+    &quot;C&quot;, &quot;Pillar C: Integration &amp; API-Led&quot;,
+    &quot;D&quot;, &quot;Pillar D: AI &amp; Agentforce&quot;,
+    &quot;E&quot;, &quot;Pillar E: DevOps &amp; Automation&quot;,
+    &quot;Unassigned&quot;
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Pillar Label</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>61.0</apiVersion>
+    
+    <assignments>
+        <name>Set_Universal_Sort</name>
+        <label>Set Universal Sort Order</label>
+        <locationX>176</locationX>
+        <locationY>287</locationY>
+        <assignmentItems>
+            <assignToReference>varUniversalSort</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>formFirstNonNullSort</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Check_Architect_Persona</targetReference>
+        </connector>
+    </assignments>
+
+    <assignments>
+        <name>Sync_Architect_Sort</name>
+        <label>Sync Architect Sort</label>
+        <locationX>264</locationX>
+        <locationY>503</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Architect_Sort_Order__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varUniversalSort</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Check_Developer_Persona</targetReference>
+        </connector>
+    </assignments>
+
+    <assignments>
+        <name>Sync_Developer_Sort</name>
+        <label>Sync Developer Sort</label>
+        <locationX>264</locationX>
+        <locationY>803</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Developer_Sort_Order__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varUniversalSort</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Check_Admin_Persona</targetReference>
+        </connector>
+    </assignments>
+
+    <assignments>
+        <name>Sync_Admin_Sort</name>
+        <label>Sync Admin Sort</label>
+        <locationX>264</locationX>
+        <locationY>1103</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Admin_Sort_Order__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varUniversalSort</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Update_Universal_Sort</targetReference>
+        </connector>
+    </assignments>
+
+    <assignments>
+        <name>Update_Universal_Sort</name>
+        <label>Update Universal Sort Order</label>
+        <locationX>176</locationX>
+        <locationY>1295</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Sort_Order__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>varUniversalSort</elementReference>
+            </value>
+        </assignmentItems>
+    </assignments>
+
+    <decisions>
+        <name>Check_Architect_Persona</name>
+        <label>Check if Architect persona selected</label>
+        <locationX>176</locationX>
+        <locationY>395</locationY>
+        <defaultConnector>
+            <targetReference>Check_Developer_Persona</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Skip</defaultConnectorLabel>
+        <rules>
+            <name>Is_Architect</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Persona_Tag__c</leftValueReference>
+                <operator>Contains</operator>
+                <rightValue>
+                    <stringValue>Architect</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Sync_Architect_Sort</targetReference>
+            </connector>
+            <label>Is Architect</label>
+        </rules>
+    </decisions>
+
+    <decisions>
+        <name>Check_Developer_Persona</name>
+        <label>Check if Developer persona selected</label>
+        <locationX>176</locationX>
+        <locationY>695</locationY>
+        <defaultConnector>
+            <targetReference>Check_Admin_Persona</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Skip</defaultConnectorLabel>
+        <rules>
+            <name>Is_Developer</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Persona_Tag__c</leftValueReference>
+                <operator>Contains</operator>
+                <rightValue>
+                    <stringValue>Dev</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Sync_Developer_Sort</targetReference>
+            </connector>
+            <label>Is Developer</label>
+        </rules>
+    </decisions>
+
+    <decisions>
+        <name>Check_Admin_Persona</name>
+        <label>Check if Admin persona selected</label>
+        <locationX>176</locationX>
+        <locationY>995</locationY>
+        <defaultConnector>
+            <targetReference>Update_Universal_Sort</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Skip</defaultConnectorLabel>
+        <rules>
+            <name>Is_Admin</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Persona_Tag__c</leftValueReference>
+                <operator>Contains</operator>
+                <rightValue>
+                    <stringValue>Admin</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Sync_Admin_Sort</targetReference>
+            </connector>
+            <label>Is Admin</label>
+        </rules>
+    </decisions>
+
+    <formulas>
+        <name>formFirstNonNullSort</name>
+        <dataType>Number</dataType>
+        <scale>0</scale>
+        <expression>BLANKVALUE({!$Record.Architect_Sort_Order__c}, 
+            BLANKVALUE({!$Record.Developer_Sort_Order__c}, 
+            BLANKVALUE({!$Record.Admin_Sort_Order__c}, 
+            {!$Record.Sort_Order__c})))</expression>
+    </formulas>
+
+    <interviewLabel>Sync Experience Highlight Sort Orders {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Sync Experience Highlight Sort Orders</label>
+    <processType>AutoLaunchedFlow</processType>
+    
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Set_Universal_Sort</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Lock_Sort_Across_Personas__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <object>Experience_Highlight__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordBeforeSave</triggerType>
+    </start>
+    
+    <status>Active</status>
+
+    <variables>
+        <name>varUniversalSort</name>
+        <dataType>Number</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <scale>0</scale>
+    </variables>
+</Flow>
