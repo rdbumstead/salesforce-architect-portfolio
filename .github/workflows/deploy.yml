@@ -6,8 +6,8 @@ on:
       - 'packages/employer-hub-demo/**'
       - 'packages/integration-api/**'
       - 'packages/portfolio-site/**'
-      # - 'packages/shared-modules/**'
-
+      - 'packages/shared-modules/**'
+      - 'sfdx-project.json'
 jobs:
   deploy:
     runs-on: ubuntu-latest
