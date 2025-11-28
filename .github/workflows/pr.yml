@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'packages/**'
+
 jobs:
   validate-and-test:
     runs-on: ubuntu-latest
@@ -15,7 +16,7 @@ jobs:
         run: npm install @salesforce/cli --global
      
       - name: Install Code Analyzer
-        run: sf plugins install @salesforce/code-analyzer
+        run: sf plugins install code-analyzer
      
       - name: Authenticate via JWT
         run: |
