@@ -3,7 +3,10 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'packages/**'
+      - 'packages/employer-hub-demo/**'
+      - 'packages/integration-api/**'
+      - 'packages/portfolio-site/**'
+      # - 'packages/shared-modules/**'
 
 jobs:
   deploy:
