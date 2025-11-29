@@ -3,6 +3,7 @@ private class GithubCacheCleanupBatchTest {
 
     @IsTest
     static void testGithubBatchDeletesExpiredRecords() {
+        CacheCleanupSettings.testOverrideEnabled = false;
 
         CacheCleanupTestDataFactory.createGithubCache(10);
 
@@ -13,13 +14,30 @@ private class GithubCacheCleanupBatchTest {
         }
 
         Test.startTest();
-        Database.executeBatch(new GithubCacheCleanupBatch(), 5);
+        Database.executeBatch(new GithubCacheCleanupBatch(), 200);
         Test.stopTest();
 
         System.assertEquals(
             0,
             [SELECT COUNT() FROM Github_Cache__c],
             'All expired GitHub cache records should be deleted.'
+        );
+    }
+
+    @IsTest
+    static void testGithubBatchWhenDisabled() {
+        CacheCleanupSettings.testOverrideEnabled = true;
+
+        CacheCleanupTestDataFactory.createGithubCache(10);
+
+        Test.startTest();
+        Database.executeBatch(new GithubCacheCleanupBatch(), 200);
+        Test.stopTest();
+
+        System.assertEquals(
+            10,
+            [SELECT COUNT() FROM Github_Cache__c],
+            'No GitHub cache records should be deleted when cleanup is disabled.'
         );
     }
 }
