@@ -23,4 +23,4 @@ jobs:
           sf org login jwt --client-id ${{ secrets.SFDX_CLIENT_ID }} --jwt-key-file portfolio.key --username ${{ secrets.SFDX_USERNAME }} --alias portfolio --instance-url https://login.salesforce.com
 
       - name: Deploy Source
-        run: sf project deploy start --target-org portfolio --wait 10
+        run: sf project deploy start --source-dir packages --target-org portfolio --wait 10
