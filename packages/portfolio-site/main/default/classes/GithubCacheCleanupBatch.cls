@@ -28,7 +28,7 @@ public class GithubCacheCleanupBatch
 
     public void finish(Database.BatchableContext bc) {
 
-        if (CacheCleanupSettings.isEnabled()) {
+        if (!Test.isRunningTest() && CacheCleanupSettings.isEnabled()) {
             CacheCleanupOrchestrator.runJiraCleanup();
         }
     }
