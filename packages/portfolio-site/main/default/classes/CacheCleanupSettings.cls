@@ -7,15 +7,21 @@ public class CacheCleanupSettings {
         if (Test.isRunningTest() && testOverrideEnabled != null) {
             return testOverrideEnabled;
         }
-        return settings()?.Is_Enabled__c ?? true;  // Default to true
+        Cache_Cleanup_Settings__mdt s = settings();
+        return s != null ? s.Is_Enabled__c : true;
     }
 
     public static Boolean allowHardDelete() {
-        return settings()?.Allow_Hard_Delete__c ?? false;  // Default to false
+        Cache_Cleanup_Settings__mdt s = settings();
+        return s != null ? s.Allow_Hard_Delete__c : false;
     }
 
     public static Integer batchSize() {
-        Integer size = Integer.valueOf(settings()?.Max_Batch_Size__c ?? 200);
+        Cache_Cleanup_Settings__mdt s = settings();
+        if (s == null || s.Max_Batch_Size__c == null) {
+            return 200;
+        }
+        Integer size = Integer.valueOf(s.Max_Batch_Size__c);
         return size > 0 ? size : 200;
     }
 

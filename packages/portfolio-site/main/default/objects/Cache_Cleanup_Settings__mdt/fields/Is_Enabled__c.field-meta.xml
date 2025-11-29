@@ -5,5 +5,5 @@
     <label>Is Enabled</label>
     <required>false</required>
     <type>Checkbox</type>
-    <default>true</default>
+    <defaultValue>true</defaultValue>
 </CustomField>
