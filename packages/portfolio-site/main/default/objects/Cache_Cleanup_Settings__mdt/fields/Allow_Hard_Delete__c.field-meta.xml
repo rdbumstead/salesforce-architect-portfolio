@@ -5,5 +5,5 @@
     <label>Allow Hard Delete</label>
     <required>false</required>
     <type>Checkbox</type>
-    <default>false</default>
+    <defaultValue>false</defaultValue>
 </CustomField>
