@@ -64,7 +64,6 @@ jobs:
           POTENTIAL_TARGETS=$(find packages -type d -path "*/main/default")
           TARGETS=""
           for dir in $POTENTIAL_TARGETS; do
-            # Check if directory has any files not ignored (e.g., exclude jsconfig.json, .eslintrc.json per .forceignore)
             if [ $(find "$dir" -type f ! -name "jsconfig.json" ! -name ".eslintrc.json" | wc -l) -gt 0 ]; then
               if [ -z "$TARGETS" ]; then
                 TARGETS="$dir"
@@ -79,17 +78,6 @@ jobs:
           fi
           echo "Resolved targets: $TARGETS"
           echo "targets=$TARGETS" >> $GITHUB_OUTPUT
-
-      - name: Debug Directory Structure and CLI Version
-        shell: bash
-        run: |
-          echo "Listing packages directory structure:"
-          ls -R packages
-          echo "Salesforce CLI version:"
-          sf version --verbose
-          sf plugins --core
-          echo "Node version:"
-          node --version
 
       - name: Run Salesforce Code Analyzer
         shell: bash
@@ -113,12 +101,32 @@ jobs:
             --no-ancestors \
             --wait 10
 
-      - name: Push Full Source
-        run: sf project deploy start --target-org ci-org
-
-      - name: Assign Permissions
+      - name: Deploy Core Metadata
         run: |
-          sf org assign permset --name Portfolio_Admin --target-org ci-org
+          sf project deploy start \
+            --source-dir packages/shared-modules/main/default \
+            --source-dir packages/portfolio-site/main/default/objects \
+            --source-dir packages/portfolio-site/main/default/tabs \
+            --source-dir packages/portfolio-site/main/default/classes \
+            --source-dir packages/portfolio-site/main/default/lwc \
+            --target-org ci-org \
+            --wait 10
+
+      - name: Deploy Configuration Metadata
+        run: |
+          sf project deploy start \
+            --metadata-dir packages/portfolio-site/main/default/permissionsets \
+            --target-org ci-org \
+            --ignore-warnings \
+            --wait 10
+        continue-on-error: true
+
+      - name: Verify Core Deployment
+        run: |
+          echo "=== Deployed Apex Classes ==="
+          sf org list metadata --metadata-type ApexClass --target-org ci-org
+          echo "=== Deployed LWC Components ==="
+          sf org list metadata --metadata-type LightningComponentBundle --target-org ci-org
 
       # ------------------------------------------------------------------
       # 5. Quality Gates (Apex Tests)

@@ -53,3 +53,15 @@ changed/
 # ---------------------------------------------------------------------
 .DS_Store
 Thumbs.db
+
+# ---------------------------------------------------------------------
+# Problematic Metadata for CI/Scratch Org Deployments
+# ---------------------------------------------------------------------
+# Standard profiles cannot have certain permissions modified
+**/profiles/Admin.profile-meta.xml
+
+# Namespace-prefixed permission sets from installed packages
+**/permissionsets/sfdcInternalInt__*.permissionset-meta.xml
+
+# Permission sets with missing license or dependency requirements
+**/permissionsets/Contact_Information_Agent_Permissions.permissionset-meta.xml
