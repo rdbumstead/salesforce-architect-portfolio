@@ -64,7 +64,9 @@ module.exports = [
     },
     rules: {
       "@lwc/lwc-platform/no-inline-disable": "off",
-      "no-await-in-loop": "off"
+      "no-await-in-loop": "off",
+      // Allow setTimeout and requestAnimationFrame for animations
+      "@lwc/lwc/no-async-operation": "off"
     }
   },
 

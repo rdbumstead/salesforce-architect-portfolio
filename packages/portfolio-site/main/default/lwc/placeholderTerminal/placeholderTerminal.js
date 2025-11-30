@@ -1,10 +1,14 @@
 import { LightningElement, track } from "lwc";
 
 export default class PlaceholderTerminal extends LightningElement {
-  /* ---------------------------------------------
-   * Static Boot Sequence
-   * --------------------------------------------- */
-  static FULL_LOG_SEQUENCE = [
+  @track displayedLogs = [];
+  isBooting = true;
+  showCta = false;
+
+  _skipAnimation = false;
+  _handleEscape;
+
+  fullLogSequence = [
     {
       id: 1,
       text: "Loading System Architecture Specification...",
@@ -97,46 +101,11 @@ export default class PlaceholderTerminal extends LightningElement {
     }
   ];
 
-  /* ---------------------------------------------
-   * State
-   * --------------------------------------------- */
-  @track displayedLogs = [];
-  isBooting = true;
-  showCta = false;
-
-  _skipAnimation = false;
-  _handleEscape;
-
-  /* ---------------------------------------------
-   * Safe window accessors
-   * --------------------------------------------- */
-  get win() {
-    return typeof window !== "undefined" ? window : null;
-  }
-
-  get raf() {
-    return this.win?.requestAnimationFrame?.bind(this.win);
-  }
-
-  get timeout() {
-    return this.win?.setTimeout?.bind(this.win);
-  }
-
-  get safeSessionStorage() {
-    return this.win?.sessionStorage;
-  }
-
-  /* ---------------------------------------------
-   * Lifecycle
-   * --------------------------------------------- */
   connectedCallback() {
     this._handleEscape = this.handleGlobalKeydown.bind(this);
+    window.addEventListener("keydown", this._handleEscape);
 
-    if (this.win) {
-      this.win.addEventListener("keydown", this._handleEscape);
-    }
-
-    const hasVisited = this.safeSessionStorage?.getItem("portfolio_booted");
+    const hasVisited = sessionStorage.getItem("portfolio_booted");
 
     if (hasVisited) {
       this.skipBootSequence();
@@ -146,28 +115,17 @@ export default class PlaceholderTerminal extends LightningElement {
   }
 
   disconnectedCallback() {
-    if (this.win) {
-      this.win.removeEventListener("keydown", this._handleEscape);
-    }
+    window.removeEventListener("keydown", this._handleEscape);
   }
 
-  /* ---------------------------------------------
-   * Derived properties
-   * --------------------------------------------- */
   get terminalTitle() {
-    if (this.win) {
-      return this.win.innerWidth < 450
-        ? "PORTFOLIO_ARCHITECT v1.0"
-        : "RYAN_BUMSTEAD_PORTFOLIO_ARCHITECT v1.0";
-    }
-    return "RYAN_BUMSTEAD_PORTFOLIO_ARCHITECT v1.0";
+    return window.innerWidth < 450
+      ? "PORTFOLIO_ARCHITECT v1.0"
+      : "RYAN_BUMSTEAD_PORTFOLIO_ARCHITECT v1.0";
   }
 
-  /* ---------------------------------------------
-   * Boot sequence control
-   * --------------------------------------------- */
   async runBootSequence() {
-    for (const log of PlaceholderTerminal.FULL_LOG_SEQUENCE) {
+    for (const log of this.fullLogSequence) {
       if (this._skipAnimation) return;
       await this.wait(log.delay);
       if (this._skipAnimation) return;
@@ -197,7 +155,7 @@ export default class PlaceholderTerminal extends LightningElement {
   }
 
   skipBootSequence() {
-    this.displayedLogs = PlaceholderTerminal.FULL_LOG_SEQUENCE.map((log) =>
+    this.displayedLogs = this.fullLogSequence.map((log) =>
       this.processLog(log)
     );
     this.finishBoot(false);
@@ -207,8 +165,7 @@ export default class PlaceholderTerminal extends LightningElement {
     this.isBooting = false;
     this.showCta = true;
 
-    const hasVisited = this.safeSessionStorage?.getItem("portfolio_booted");
-
+    const hasVisited = sessionStorage.getItem("portfolio_booted");
     if (!hasVisited && completedNaturally) {
       this.addLog({
         id: 999,
@@ -218,13 +175,10 @@ export default class PlaceholderTerminal extends LightningElement {
       });
     }
 
-    this.safeSessionStorage?.setItem("portfolio_booted", "true");
+    sessionStorage.setItem("portfolio_booted", "true");
     this.scrollToBottom();
   }
 
-  /* ---------------------------------------------
-   * Log handling
-   * --------------------------------------------- */
   addLog(logData) {
     this.displayedLogs.push(this.processLog(logData));
     this.scrollToBottom();
@@ -254,32 +208,25 @@ export default class PlaceholderTerminal extends LightningElement {
         logData.type !== "info" && !logData.forceIcon
           ? `[${logData.type.toUpperCase()}] ${logData.text}`
           : logData.text,
-      cssClass,
-      icon
+      cssClass: cssClass,
+      icon: icon
     };
   }
 
-  /* ---------------------------------------------
-   * Timing + UI helpers
-   * --------------------------------------------- */
-  wait(ms) {
-    return new Promise((resolve) => {
-      if (this.timeout) {
-        this.timeout(resolve, ms);
-      } else {
-        resolve();
-      }
-    });
-  }
-
   scrollToBottom() {
-    if (!this.raf) return;
-
-    this.raf(() => {
-      const terminalBody = this.refs?.terminalBody;
+    requestAnimationFrame(() => {
+      const terminalBody = this.refs.terminalBody;
       if (terminalBody) {
         terminalBody.scrollTop = terminalBody.scrollHeight;
       }
     });
+  }
+
+  wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  get ctaClass() {
+    return `cta-container ${this.showCta ? "visible" : ""}`;
   }
 }

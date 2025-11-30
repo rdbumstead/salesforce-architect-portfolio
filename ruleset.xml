@@ -19,7 +19,6 @@
     <exclude-pattern>.*scan-results\.html</exclude-pattern>
     <exclude-pattern>.*results\.html</exclude-pattern>
     <exclude-pattern>.*ruleset\.xml</exclude-pattern>
-    <exclude-pattern>.*ruleset\.xml</exclude-pattern>
 
     <!-- Apex Rules -->
     <rule ref="category/apex/bestpractices.xml" />
@@ -31,7 +30,10 @@
     <rule ref="category/apex/security.xml" />
 
     <!-- JavaScript/LWC Rules -->
-    <rule ref="category/ecmascript/bestpractices.xml" />
+    <rule ref="category/ecmascript/bestpractices.xml">
+      <!-- Exclude GlobalVariable - produces false positives for LWC @track decorators -->
+      <exclude name="GlobalVariable" />
+    </rule>
     <rule ref="category/ecmascript/codestyle.xml" />
     <rule ref="category/ecmascript/errorprone.xml" />
 
