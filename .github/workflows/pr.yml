@@ -56,9 +56,19 @@ jobs:
         id: resolve-targets
         shell: bash
         run: |
-          TARGETS=$(find packages -type d -path "*/main/default" -exec dirname {} \; | sed 's|/default||' | paste -sd, -)
+          TARGETS=$(find packages -type d -path "*/main/default" | paste -sd, -)
+          if [ -z "$TARGETS" ]; then
+            echo "No main/default directories found. Falling back to scanning all packages."
+            TARGETS="packages"
+          fi
           echo "Resolved targets: $TARGETS"
           echo "targets=$TARGETS" >> $GITHUB_OUTPUT
+
+      - name: Debug Directory Structure
+        shell: bash
+        run: |
+          echo "Listing packages directory structure:"
+          ls -R packages
 
       - name: Run Salesforce Code Analyzer
         shell: bash
