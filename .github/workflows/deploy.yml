@@ -60,8 +60,7 @@ jobs:
             --from "$FROM_SHA" \
             --output changed \
             --source packages \
-            --generate-delta \
-            --log-level DEBUG
+            --generate-delta
 
       # ------------------------------------------------------------------
       # 4. Deploy to Production
@@ -75,8 +74,7 @@ jobs:
               --manifest changed/package/package.xml \
               --post-destructive-changes changed/destructiveChanges/destructiveChanges.xml \
               --target-org portfolio \
-              --wait 20 \
-              --log-level DEBUG
+              --wait 20
           else
             echo "No Salesforce metadata changes detected. Skipping deploy."
           fi
