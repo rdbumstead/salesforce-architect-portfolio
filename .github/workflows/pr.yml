@@ -53,7 +53,7 @@ jobs:
       # 3. Static Analysis
       # ------------------------------------------------------------------
       - name: Run Static Code Analysis
-        run: sf code-analyzer run --workspace packages --severity-threshold 2
+        run: sf code-analyzer run --target "." --severity-threshold 2
         continue-on-error: false
 
       # Run ESLint separately via npm
