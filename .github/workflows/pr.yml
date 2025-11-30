@@ -52,32 +52,39 @@ jobs:
       # ------------------------------------------------------------------
       # 3. Static Analysis
       # ------------------------------------------------------------------
-      # ------------------------------------------------------------------
-      # 3. Static Analysis
-      # ------------------------------------------------------------------
-      - name: Configure and Run Code Analyzer
+      - name: Configure and Run Code Analyzer per Package
         run: |
-          # 1. Generate config with absolute paths
+          RULESET_PATH="$(realpath ruleset.xml)"
+
+          if [[ ! -f "$RULESET_PATH" ]]; then
+            echo "ERROR: ruleset.xml not found at $RULESET_PATH"
+            exit 1
+          fi
+          echo "Using ruleset at: $RULESET_PATH"
+
           echo "engines:" > code-analyzer.yml
           echo "  pmd:" >> code-analyzer.yml
           echo "    custom_rulesets:" >> code-analyzer.yml
-          echo "      - $GITHUB_WORKSPACE/ruleset.xml" >> code-analyzer.yml
+          echo "      - $RULESET_PATH" >> code-analyzer.yml
           echo "  eslint:" >> code-analyzer.yml
           echo "    auto_discover_eslint_config: true" >> code-analyzer.yml
 
-          # 2. Show config to logs
           cat code-analyzer.yml
 
-          # 3. Analyze only Salesforce metadata directories
-          sf code-analyzer run \
-            --target "packages/*/main" \
-            --severity-threshold 2
+          for PACKAGE_PATH in packages/*/main; do
+            if [[ -d "$PACKAGE_PATH" ]]; then
+              echo "-------------------------------------------"
+              echo "Analyzing package: $PACKAGE_PATH"
+              echo "-------------------------------------------"
+              sf code-analyzer run \
+                --target "$PACKAGE_PATH" \
+                --severity-threshold 2
+            else
+              echo "Skipping $PACKAGE_PATH – not a directory"
+            fi
+          done
+        shell: /usr/bin/bash -e {0}
         continue-on-error: false
-
-      # Run ESLint separately via npm
-      - name: Run ESLint on LWC/Aura
-        run: npm run lint
-        continue-on-error: true
 
       # ------------------------------------------------------------------
       # 4. Scratch Org Execution (Create & Push)
