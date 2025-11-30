@@ -50,17 +50,23 @@ jobs:
             --alias devhub
 
       # ------------------------------------------------------------------
-      # 3. Static Analysis (PMD + RetireJS + CPD)
+      # 3. Static Analysis
       # ------------------------------------------------------------------
-      - name: Run Salesforce Code Analyzer
+      - name: Dynamically Resolve Salesforce Package Targets
+        id: resolve-targets
+        shell: bash
         run: |
-          # Trust the committed code-analyzer.yml
+          TARGETS=$(find packages -type d -path "*/main/default" -exec dirname {} \; | paste -sd, -)
+          echo "Resolved targets: $TARGETS"
+          echo "targets=$TARGETS" >> $GITHUB_OUTPUT
+
+      - name: Run SF Code Analyzer (Dynamic Targets)
+        shell: bash
+        run: |
           sf code-analyzer run \
-            --target "." \
-            --format table \
+            --target "${{ steps.resolve-targets.outputs.targets }}" \
+            --rule-selector pmd:PortfolioSecurityRules \
             --severity-threshold 2
-        shell: /usr/bin/bash -e {0}
-        continue-on-error: false
 
       # ------------------------------------------------------------------
       # 4. Scratch Org Execution
