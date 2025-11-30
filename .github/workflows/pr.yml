@@ -1,24 +1,19 @@
-name: Validate PR
+name: Validate PR (Scratch Org)
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
     paths:
-      - "packages/shared-modules/**"
-      - "packages/integration-api/**"
-      - "packages/employer-hub-demo/**"
-      - "packages/portfolio-site/**"
+      - "packages/**"
       - "sfdx-project.json"
 
 jobs:
-  validate-and-test:
+  validate-scratch-org:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       # ------------------------------------------------------------------
       # 1. Setup & LWC Tests
@@ -41,59 +36,60 @@ jobs:
       - name: Install Salesforce CLI
         run: npm install @salesforce/cli --global
 
-      - name: Install sfdx-git-delta
-        run: echo y | sf plugins install sfdx-git-delta
-
       - name: Install Code Analyzer
         run: sf plugins install code-analyzer
 
-      - name: Authenticate via JWT
+      - name: Authenticate Dev Hub
         run: |
           echo "${{ secrets.SFDX_JWT_KEY }}" > portfolio.key
           sf org login jwt \
             --client-id ${{ secrets.SFDX_CLIENT_ID }} \
             --jwt-key-file portfolio.key \
             --username ${{ secrets.SFDX_USERNAME }} \
-            --alias portfolio \
-            --instance-url https://login.salesforce.com
+            --set-default-dev-hub \
+            --alias devhub
 
       # ------------------------------------------------------------------
       # 3. Static Analysis
       # ------------------------------------------------------------------
       - name: Run PMD Static Code Analysis
-        run: sf code-analyzer run --target "packages" --rule-selector pmd:portfoliorules --severity-threshold 1
+        run: sf code-analyzer run --target "packages" --rule-selector pmd:portfoliorules --severity-threshold 3
 
       # ------------------------------------------------------------------
-      # 4. Generate Delta (PR Specific Logic)
+      # 4. Scratch Org Execution (Create & Push)
       # ------------------------------------------------------------------
-      - name: Generate Delta
+      - name: Create Scratch Org
         run: |
-          git fetch origin main
-          mkdir -p changed
-          sf sgd source delta \
-            --to "HEAD" \
-            --from "origin/main" \
-            --output changed \
-            --source packages \
-            --generate-delta \
-            --log-level DEBUG
+          sf org create scratch \
+            --target-dev-hub devhub \
+            --definition-file config/project-scratch-def.json \
+            --alias ci-org \
+            --duration-days 1 \
+            --set-default \
+            --no-ancestors \
+            --wait 10
+
+      - name: Push Full Source
+        run: sf project deploy start --target-org ci-org
+
+      - name: Assign Permissions
+        run: |
+          sf org assign permset --name Portfolio_Admin --target-org ci-org
 
       # ------------------------------------------------------------------
-      # 5. Validation (Dry Run)
+      # 5. Quality Gates (Apex Tests)
       # ------------------------------------------------------------------
-      - name: Validate Deployment (Dry Run)
+      - name: Run Apex Tests
         run: |
-          if [ -s changed/package/package.xml ]; then
-            echo "Validating changes against Production..."
-            
-            sf project deploy start \
-              --manifest changed/package/package.xml \
-              --post-destructive-changes changed/destructiveChanges/destructiveChanges.xml \
-              --target-org portfolio \
-              --dry-run \
-              --test-level RunLocalTests \
-              --wait 20 \
-              --log-level DEBUG
-          else
-            echo "No Salesforce metadata changes detected. Skipping validation."
-          fi
+          sf apex run test \
+            --target-org ci-org \
+            --code-coverage \
+            --result-format human \
+            --wait 10
+
+      # ------------------------------------------------------------------
+      # 6. Teardown
+      # ------------------------------------------------------------------
+      - name: Delete Scratch Org
+        if: always()
+        run: sf org delete scratch --target-org ci-org --no-prompt
