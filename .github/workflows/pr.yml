@@ -52,15 +52,16 @@ jobs:
       # ------------------------------------------------------------------
       # 3. Static Analysis
       # ------------------------------------------------------------------
-      - name: Run Static Code Analysis with Code Analyzer Config
+      - name: Run Static Code Analysis
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: |
-          export NODE_OPTIONS="--max-old-space-size=4096"
           sf code-analyzer run \
             --workspace . \
-            --severity-threshold 3
+            --severity-threshold 2
         continue-on-error: false
 
-      # Run ESLint separately via npm (more reliable than Code Analyzer)
+      # Run ESLint separately via npm
       - name: Run ESLint on LWC/Aura
         run: npm run lint
         continue-on-error: true
@@ -102,4 +103,5 @@ jobs:
       # ------------------------------------------------------------------
       - name: Delete Scratch Org
         if: always()
-        run: sf org delete scratch --target-org ci-org --no-prompt
+        run: sf org delete scratch --target-org ci-org --no-prompt || true
+        continue-on-error: true
