@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v3
 
       # ------------------------------------------------------------------
-      # 1. Setup & LWC Tests
+      # 1. Setup Node and Run LWC Tests
       # ------------------------------------------------------------------
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -31,7 +31,7 @@ jobs:
         run: npm run test:unit
 
       # ------------------------------------------------------------------
-      # 2. Salesforce Setup
+      # 2. Salesforce CLI & Code Analyzer
       # ------------------------------------------------------------------
       - name: Install Salesforce CLI
         run: npm install @salesforce/cli --global
@@ -52,30 +52,43 @@ jobs:
       # ------------------------------------------------------------------
       # 3. Static Analysis
       # ------------------------------------------------------------------
-      - name: Run Salesforce Code Analyzer
+      - name: Configure and Run Code Analyzer per Package
         run: |
           if [[ ! -f "ruleset.xml" ]]; then
             echo "ERROR: ruleset.xml not found"
             exit 1
           fi
 
-          cat > code-analyzer.yml <<EOF
-            engines:
-              pmd:
-                custom_rulesets:
-                  - ruleset.xml
-              eslint:
-                auto_discover_eslint_config: true
-          EOF
+          echo "engines:" > code-analyzer.yml
+          echo "  pmd:" >> code-analyzer.yml
+          echo "    custom_rulesets:" >> code-analyzer.yml
+          echo "      - $GITHUB_WORKSPACE/ruleset.xml" >> code-analyzer.yml
+          echo "  eslint:" >> code-analyzer.yml
+          echo "    auto_discover_eslint_config: true" >> code-analyzer.yml
 
           echo "Generated Config Content:"
           cat code-analyzer.yml
 
-          sf code-analyzer run --format table --severity-threshold 2
-          shell: /usr/bin/bash -e {0}
+          for PACKAGE_DIR in packages/*/main; do
+            if [[ -d "$PACKAGE_DIR" ]]; then
+              TARGET_ABS="$GITHUB_WORKSPACE/$PACKAGE_DIR"
+              
+              echo "-------------------------------------------"
+              echo "Scanning: $TARGET_ABS"
+              echo "-------------------------------------------"
+              
+              sf code-analyzer run \
+                --workspace "$GITHUB_WORKSPACE" \
+                --config-file "$GITHUB_WORKSPACE/code-analyzer.yml" \
+                --target "$TARGET_ABS" \
+                --severity-threshold 2
+            fi
+          done
+        shell: /usr/bin/bash -e {0}
+        continue-on-error: false
 
       # ------------------------------------------------------------------
-      # 4. Scratch Org Execution (Create & Push)
+      # 4. Scratch Org Execution
       # ------------------------------------------------------------------
       - name: Create Scratch Org
         run: |
