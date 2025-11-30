@@ -105,10 +105,7 @@ jobs:
         run: |
           sf project deploy start \
             --source-dir packages/shared-modules/main/default \
-            --source-dir packages/portfolio-site/main/default/objects \
-            --source-dir packages/portfolio-site/main/default/tabs \
-            --source-dir packages/portfolio-site/main/default/classes \
-            --source-dir packages/portfolio-site/main/default/lwc \
+            --source-dir packages/portfolio-site/main/default \
             --target-org ci-org \
             --wait 10
 
