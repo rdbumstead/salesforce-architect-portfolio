@@ -52,15 +52,15 @@ jobs:
       # ------------------------------------------------------------------
       # 3. Static Analysis
       # ------------------------------------------------------------------
-      - name: Dynamically Resolve Salesforce Package Targets
+      - name: Resolve valid Salesforce analyzer targets
         id: resolve-targets
         shell: bash
         run: |
-          TARGETS=$(find packages -type d -path "*/main/default" -exec dirname {} \; | paste -sd, -)
+          TARGETS=$(find packages -type d -path "*/main/default" -exec dirname {} \; | sed 's|/default||' | paste -sd, -)
           echo "Resolved targets: $TARGETS"
           echo "targets=$TARGETS" >> $GITHUB_OUTPUT
 
-      - name: Run SF Code Analyzer (Dynamic Targets)
+      - name: Run Salesforce Code Analyzer
         shell: bash
         run: |
           sf code-analyzer run \
