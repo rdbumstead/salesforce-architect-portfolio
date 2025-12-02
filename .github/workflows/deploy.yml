@@ -10,10 +10,20 @@ on:
       - "packages/portfolio-site/**"
       - "sfdx-project.json"
 
+  workflow_dispatch:
+    inputs:
+      deployment_mode:
+        description: 'Deployment Mode'
+        required: true
+        default: 'delta'
+        type: choice
+        options:
+        - delta
+        - full
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       # ------------------------------------------------------------------
       # 1. Checkout Code
@@ -42,18 +52,25 @@ jobs:
             --instance-url https://login.salesforce.com
 
       # ------------------------------------------------------------------
-      # 3. Generate Delta
+      # 3. Generate Delta (Skipped if Manual Full Deploy)
       # ------------------------------------------------------------------
       - name: Generate Delta
+        if: ${{ github.event_name == 'push' || inputs.deployment_mode == 'delta' }}
         run: |
           mkdir -p changed
 
-          # Handle the edge case of the very first commit/branch creation
-          FROM_SHA="${{ github.event.before }}"
-          if [ "$FROM_SHA" = "0000000000000000000000000000000000000000" ]; then
-            echo "First push detected. Using empty tree for full delta."
-            FROM_SHA="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+          if [ "${{ github.event_name }}" == "push" ]; then
+            FROM_SHA="${{ github.event.before }}"
+          else
+            FROM_SHA="HEAD~1"
           fi
+
+          if [ -z "$FROM_SHA" ] || [ "$FROM_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "First push or manual trigger detected. Using default HEAD~1 or empty tree."
+            FROM_SHA="HEAD~1"
+          fi
+
+          echo "Generating delta from $FROM_SHA to HEAD..."
 
           sf sgd source delta \
             --to "HEAD" \
@@ -65,16 +82,25 @@ jobs:
       # ------------------------------------------------------------------
       # 4. Deploy to Production
       # ------------------------------------------------------------------
-      - name: Deploy Delta
+      - name: Deploy
         run: |
-          if [ -s changed/package/package.xml ]; then
-            echo "Detected Salesforce metadata changes. Deploying..."
-
+          if [ "${{ inputs.deployment_mode }}" == "full" ]; then
+            echo "MANUAL TRIGGER DETECTED: Executing Full Source Deployment..."
+            
+            sf project deploy start \
+              --source-dir packages \
+              --target-org portfolio \
+              --wait 60
+          
+          elif [ -s changed/package/package.xml ]; then
+            echo "Changes detected. Executing Delta Deployment..."
+            
             sf project deploy start \
               --manifest changed/package/package.xml \
               --post-destructive-changes changed/destructiveChanges/destructiveChanges.xml \
               --target-org portfolio \
               --wait 20
+          
           else
             echo "No Salesforce metadata changes detected. Skipping deploy."
           fi
