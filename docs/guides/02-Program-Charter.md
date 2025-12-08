@@ -343,7 +343,7 @@ The delivery is organized into four parallel execution tracks:
 
   - Real-time rate-limit counters in Glass Box footer
 
-Phase 9: Edge AI Proxy (Cloudflare Workers
+**Phase 9: Edge AI Proxy (Cloudflare Workers**
 
 ## **4. Implementation Checklist (Execution Plan)**
 
@@ -474,42 +474,17 @@ value.
 
 ### **E.3 Core User Stories**
 
-——————- ————————— ————————— —————————————-
-**ID** **Persona** **I Want To\...** **So That\...**
-
-**SPAP-47** Motion-Sensitive Pause animations The site is accessible and
-User I avoid motion sickness
-triggers.
-
-**SPAP-46** Mobile User Have fast loading Performance stays high and
-visuals I don\'t burn data.
-
-**SPAP-44** Visitor See an animated I understand capability
-skill network relationships visually.
-
-**SPAP-40** Recruiter Generate a I immediately see candidate
-tailored cover fit without reading a
-letter generic bio.
-
-**SPAP-35** Viewer See live roadmap I know the current project
-data status and active work.
-
-**SPAP-31** Recruiter See I see role-relevant
-persona-specific accomplishments (Admin vs
-bullets Architect).
-
-**SPAP-30** Recruiter Download resumes I can store them in my ATS
-for compliance.
-
-**SPAP-29** Recruiter View a dynamic I can evaluate relevant
-resume experience quickly.
-
-**SPAP-28** Visitor Have guided I can complete the 5-minute
-navigation tour efficiently.
-
-**SPAP-27** Site Visitor See a clear hero I immediately understand
-banner the purpose of the
-portfolio.
-——————- ————————— ————————— —————————————-
+| ID      | Persona               | I Want To...                     | So That...                                                    |
+| ------- | --------------------- | -------------------------------- | ------------------------------------------------------------- |
+| SPAP-47 | Motion-Sensitive User | Pause animations                 | The site is accessible and I avoid motion sickness triggers   |
+| SPAP-46 | Mobile User           | Have fast loading visuals        | Performance stays high and I don't burn data                  |
+| SPAP-44 | Visitor               | See an animated skill network    | I understand capability relationships visually                |
+| SPAP-40 | Recruiter             | Generate a tailored cover letter | I immediately see candidate fit without reading a generic bio |
+| SPAP-35 | Viewer                | See live roadmap data            | I know the current project status and active work             |
+| SPAP-31 | Recruiter             | See persona-specific bullets     | I see role-relevant accomplishments (Admin vs Architect)      |
+| SPAP-30 | Recruiter             | Download resumes                 | I can store them in my ATS for compliance                     |
+| SPAP-29 | Recruiter             | View a dynamic resume            | I can evaluate relevant experience quickly                    |
+| SPAP-28 | Visitor               | Have guided navigation           | I can complete the 5-minute tour efficiently                  |
+| SPAP-27 | Site Visitor          | See a clear hero banner          | I immediately understand the purpose of the portfolio         |
 
 ##
