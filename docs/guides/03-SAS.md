@@ -15,37 +15,31 @@ Date: MVP — Q1 2026
 The high-level data flow demonstrating the multi-cloud, API-led
 strategy.
 
+```mermaid
 graph LR
-User((User)) --> LWR[Experience Cloud LWR]
+    User((User)) --> LWR[Experience Cloud LWR]
 
-    %% DOOR 1 – Native Salesforce GraphQL (MVP – Q1 2026)
-    LWR -->|"Native GraphQL\nlightning/uiGraphQLApi"| SF_GQL[Salesforce GraphQL API]
+    %% DOOR 1 - Native Salesforce GraphQL MVP Q1 2026
+    LWR -->|Native GraphQL lightning/uiGraphQLApi| SF_GQL[Salesforce GraphQL API]
     SF_GQL --> DB[(Custom Objects)]
 
-    %% DOOR 2 – External Polyglot BFF (Phase 8 – Q2 2026)
-    LWR -->|"GraphQL or RESTnx-api-key header"| Lambda["AWS Lambda Polyglot Gatewayn(Function URL)"]
+    %% DOOR 2 - External Polyglot BFF Phase 8 Q2 2026
+    LWR -->|GraphQL or REST x-api-key header| Lambda[AWS Lambda Polyglot Gateway Function URL]
 
     %% Classic Apex REST path
-    LWR -->|"Apex REST"| Apex[Apex Runtime]
-    Lambda -->|"REST via Named Credentials"| Apex
+    LWR -->|Apex REST| Apex[Apex Runtime]
+    Lambda -->|REST via Named Credentials| Apex
 
     %% External integrations
-    Apex -->|"REST"| Jira[Jira API]
-    Apex -->|"REST"| GitHub[GitHub API]
+    Apex -->|REST| Jira[Jira API]
+    Apex -->|REST| GitHub[GitHub API]
 
     %% Future extensions
-    Lambda -->|"Serverless"| Resume["Resume Enginen(Future)"]
+    Lambda -->|Serverless| Resume[Resume Engine Future]
 
     %% AI stays on-platform
-    Apex <--> AI[Agentforce]
-
-%% Optional legend
-
-%% classDef legend fill:#f9f9f9,stroke:#aaa,stroke-dasharray: 5 5
-
-%% Legend\[Door 1 = Native (LWC)
-Door 2 = Lambda BFF
-(External)\]:::legend
+    Apex  AI[Agentforce]
+```
 
 Architecture Implementation Status (MVP — Q1 2026 Launch)
 
@@ -69,61 +63,39 @@ Phase 8 — Q2 2026 (Design Complete)
 
 10-second overview for executive stakeholders.
 
+```mermaid
 graph TD
+    subgraph Client_Layer [Client Layer]
+        Browser[Mobile & Desktop Browser]
+        LWR[LWR Experience Site]
+    end
 
-subgraph Client_Layer \[Client Layer\]
+    subgraph Salesforce_Core [Salesforce Core]
+        Apex[Apex Controller Layer]
+        Cache[Platform Cache / Custom Settings]
+        DB[(Custom Objects)]
+        AI[Agentforce Engine]
+        Logger[Nebula Logger / Platform Events]
+    end
 
-Browser\[Mobile & Desktop Browser\]
+    subgraph External_Services [Integration Layer]
+        Jira[Jira Agile]
+        Git[GitHub DevOps]
+        AWS[AWS Storage]
+    end
 
-LWR\[LWR Experience Site\]
+    Browser -->|Render| LWR
+    LWR -->|Wire Service| Apex
+    Apex -->|SOQL| DB
+    Apex -->|Grounding| AI
+    Apex -->|REST/Named Creds| Jira
+    Apex -->|REST/Named Creds| Git
+    Apex -->|REST/Named Creds| AWS
 
-end
-
-subgraph Salesforce_Core \[Salesforce Core\]
-
-Apex\[Apex Controller Layer\]
-
-Cache\[Platform Cache / Custom Settings\]
-
-DB\[(Custom Objects)\]
-
-AI\[Agentforce Engine\]
-
-Logger\[Nebula Logger / Platform Events\]
-
-end
-
-subgraph External_Services \[Integration Layer\]
-
-Jira\[Jira (Agile)\]
-
-Git\[GitHub (DevOps)\]
-
-AWS\[AWS (Storage)\]
-
-end
-
-Browser \—\>\|Render\| LWR
-
-LWR \—\>\|Wire Service\| Apex
-
-Apex \—\>\|SOQL\| DB
-
-Apex \—\>\|Grounding\| AI
-
-Apex \—\>\|REST/Named Creds\| External_Services
-
-%% Logger Connections (New)
-
-Apex \—\>\|Publish\| Logger
-
-Logger \—\>\|Persist\| DB
-
-style Client_Layer fill:#f9f9f9,stroke:#333,stroke-dasharray: 5 5
-
-style Salesforce_Core fill:#e1f5fe,stroke:#0288d1
-
-style External_Services fill:#fff3e0,stroke:#ff9800
+    %% Logger Connections
+    Apex -->|Publish| Logger
+    Logger -->|Persist| DB
+```
 
 ### **1.3 Key Salesforce Features Used**
 
@@ -275,63 +247,41 @@ the detailed field-level definition, see Appendix D.
 
 ### **4.1 Logical Data Model (ERD)**
 
+```mermaid
 erDiagram
+    Project__c ||--o{ Project_Skill__c : "requires"
+    Project__c ||--o{ Project_Asset__c : "contains"
+    Skill__c ||--o{ Project_Skill__c : "is used in"
+    Skill__c ||--o{ Experience_Skill__c : "is demonstrated in"
+    Experience__c ||--o{ Experience_Skill__c : "develops"
+    Experience__c ||--o{ Experience_Highlight__c : "contains"
 
-Project\_\_c \|\|\—o{ Project_Skill\_\_c : "requires"
+    Testimonial__c {
+        string Author_Name
+        string Relationship_Type
+        string Vibe_Mode
+        boolean Approved
+    }
 
-Project\_\_c \|\|\—o{ Project_Asset\_\_c : "contains"
+    Project__c {
+        string Name
+        string Challenge
+        string Solution
+        string Business_Value
+    }
 
-Skill\_\_c \|\|\—o{ Project_Skill\_\_c : "is used in"
+    Experience__c {
+        string Employer
+        string Role
+        date Start_Date
+    }
 
-Skill\_\_c \|\|\—o{ Experience_Skill\_\_c : "is demonstrated in"
-
-Experience\_\_c \|\|\—o{ Experience_Skill\_\_c : "develops"
-
-Experience\_\_c \|\|\—o{ Experience_Highlight\_\_c : "contains"
-
-Testimonial\_\_c {
-
-string Author_Name
-
-string Relationship_Type
-
-string Vibe_Mode
-
-boolean Approved
-
-}
-
-Project\_\_c {
-
-string Name
-
-string Challenge
-
-string Solution
-
-string Business_Value
-
-}
-
-Experience\_\_c {
-
-string Employer
-
-string Role
-
-date Start_Date
-
-}
-
-Experience_Highlight\_\_c {
-
-string Description
-
-picklist Persona_Tag
-
-id Experience\_\_c
-
-}
+    Experience_Highlight__c {
+        string Description
+        picklist Persona_Tag
+        id Experience__c
+    }
+```
 
 ### **4.2 Core Entities**
 
@@ -528,96 +478,58 @@ Generation), the portfolio includes a functional tool for recruiters.
       - **Path 3 (Bronze):** Deterministic Local Template (Metadata
         Fallback if API blackout).
 
-      - sequenceDiagram
+```mermaid
+sequenceDiagram
+    participant UI as LWC
+    participant Dispatcher as ContentGenerationController
+    participant CB1 as CircuitBreaker Agentforce
+    participant CB2 as CircuitBreaker Gemini
+    participant Agentforce
+    participant Gemini
+    participant Local as LocalTemplateService
 
-> participant UI as LWC
->
-> participant Dispatcher as ContentGenerationController
->
-> participant CB1 as CircuitBreaker (Agentforce)
->
-> participant CB2 as CircuitBreaker (Gemini)
->
-> participant Local as LocalTemplateService
->
-> UI-\>\>Dispatcher: generate(prompt, context)
->
-> Dispatcher-\>\>CB1: allowRequest()?
->
-> alt Circuit 1 Closed (Healthy)
->
-> Dispatcher-\>\>Agentforce: generate()
->
-> alt Success
->
-> Agentforce\—\>\>Dispatcher: AIResponseWrapper(\'success\',
-> \'agentforce\', content, 850ms)
->
-> Dispatcher\—\>\>UI: Return (Path 1 - Gold)
->
-> else Timeout/Error
->
-> Agentforce\—\>\>Dispatcher: Exception
->
-> CB1-\>\>CB1: recordFailure()
->
-> Note over Dispatcher: Failover to Path 2
->
-> end
->
-> else Circuit 1 Open (Broken)
->
-> Note over Dispatcher: Skip Agentforce
->
-> end
->
-> opt If Path 1 Failed or Skipped
->
-> Dispatcher-\>\>CB2: allowRequest()?
->
-> alt Circuit 2 Closed (Healthy)
->
-> Dispatcher-\>\>Gemini: generate()
->
-> alt Success
->
-> Gemini\—\>\>Dispatcher: AIResponseWrapper(\'success\', \'gemini\',
-> content, 1200ms)
->
-> Dispatcher\—\>\>UI: Return (Path 2 - Silver)
->
-> else Timeout/Error
->
-> Gemini\—\>\>Dispatcher: Exception
->
-> CB2-\>\>CB2: recordFailure()
->
-> Note over Dispatcher: Failover to Path 3
->
-> end
->
-> else Circuit 2 Open (Broken)
->
-> Note over Dispatcher: Skip Gemini
->
-> end
->
-> end
->
-> opt If Path 2 Failed or Skipped
->
-> Dispatcher-\>\>Local: generate()
->
-> Local\—\>\>Dispatcher: AIResponseWrapper(\'fallback\',
-> \'local_template\', content, 0ms)
->
-> Dispatcher\—\>\>UI: Return (Path 3 - Bronze)
->
-> Note over UI: Display "Offline Mode" Badge
->
-> Note over Dispatcher: Log GA4 Event: ai_fallback_usage
->
-> end
+    UI->>Dispatcher: generate(prompt, context)
+    Dispatcher->>CB1: allowRequest()?
+
+    alt Circuit 1 Closed Healthy
+        Dispatcher->>Agentforce: generate()
+        alt Success
+            Agentforce-->>Dispatcher: AIResponseWrapper success agentforce content 850ms
+            Dispatcher-->>UI: Return Path 1 Gold
+        else Timeout/Error
+            Agentforce-->>Dispatcher: Exception
+            CB1->>CB1: recordFailure()
+            Note over Dispatcher: Failover to Path 2
+        end
+    else Circuit 1 Open Broken
+        Note over Dispatcher: Skip Agentforce
+    end
+
+    opt If Path 1 Failed or Skipped
+        Dispatcher->>CB2: allowRequest()?
+        alt Circuit 2 Closed Healthy
+            Dispatcher->>Gemini: generate()
+            alt Success
+                Gemini-->>Dispatcher: AIResponseWrapper success gemini content 1200ms
+                Dispatcher-->>UI: Return Path 2 Silver
+            else Timeout/Error
+                Gemini-->>Dispatcher: Exception
+                CB2->>CB2: recordFailure()
+                Note over Dispatcher: Failover to Path 3
+            end
+        else Circuit 2 Open Broken
+            Note over Dispatcher: Skip Gemini
+        end
+    end
+
+    opt If Path 2 Failed or Skipped
+        Dispatcher->>Local: generate()
+        Local-->>Dispatcher: AIResponseWrapper fallback local_template content 0ms
+        Dispatcher-->>UI: Return Path 3 Bronze
+        Note over UI: Display Offline Mode Badge
+        Note over Dispatcher: Log GA4 Event ai_fallback_usage
+    end
+```
 
 - **Privacy:** Inputs are processed transiently and never stored in
   Salesforce.

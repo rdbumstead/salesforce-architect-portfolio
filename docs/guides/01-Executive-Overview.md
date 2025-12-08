@@ -65,13 +65,13 @@ Success Criteria (Definition of Done)
     - \[ \] API Lab toggle switches to "Enterprise Mode" (AWS Lambda
       Function URL)
 
-    - \[ \] Live payload counter shows â‰¥ 85 % reduction vs native mode
+    - \[ \] Live payload counter shows 85 % reduction vs native mode
 
     - \[ \] Glass Box footer shows real-time API key usage, rate-limit
-      counters, and "\$0.00 forever"
+      counters, and "$0.00 forever"
 
     - \[ \] Glass Box footer extended with AWS Lambda rate-limit and
-      cost counters (\$0.00 forever) — MVP version already shows
+      cost cost counters ($0.00 forever) — MVP version already shows
       Salesforce Governor Limits live
 
     - \[ \] Resume Engine runs serverless on Lambda (perfect PDF
