@@ -1,3 +1,7 @@
+exclude_patterns:
+  - "**/staticresources/**"
+  - "**/AnypointStudio/**"
+
 engines:
   pmd:
     disable_engine: false
