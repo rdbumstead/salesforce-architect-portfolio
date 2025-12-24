@@ -79,7 +79,7 @@ jobs:
           set -e
 
           if [ $EXIT_CODE -ne 0 ]; then
-            if echo "$OUTPUT" | grep -q "LimitExceeded"; then
+            if echo "$OUTPUT" | grep -q "LIMIT_EXCEEDED"; then
                echo "Scratch Org limit reached. Switching to Dev Hub Validation Mode."
                echo "ORG_TYPE=fallback" >> $GITHUB_ENV
             else
