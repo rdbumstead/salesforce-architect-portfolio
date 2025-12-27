@@ -31,7 +31,30 @@ jobs:
             --query "SELECT Id FROM User LIMIT 1" \
             --target-org portfolio
 
-      - name: Ensure Portfolio Owner Is Unfrozen
+      - name: Check Portfolio Owner Status
+        id: check-freeze
+        continue-on-error: true
+        run: |
+          echo "Checking portfolio owner account status..."
+
+          FROZEN_STATUS=$(sf data query \
+            --query "SELECT IsFrozen FROM UserLogin WHERE UserId IN (SELECT Id FROM User WHERE Username = '${{ secrets.SFDX_USERNAME }}')" \
+            --json \
+            --target-org portfolio \
+            | jq -r '.result.records[0].IsFrozen // "unknown"')
+
+          echo "frozen=$FROZEN_STATUS" >> $GITHUB_OUTPUT
+
+          if [ "$FROZEN_STATUS" = "true" ]; then
+            echo "::warning::Portfolio owner account is FROZEN - attempting recovery"
+          elif [ "$FROZEN_STATUS" = "false" ]; then
+            echo "Portfolio owner account is active"
+          else
+            echo "::warning::Could not determine freeze status"
+          fi
+
+      - name: Attempt to Unfreeze Portfolio Owner
+        if: steps.check-freeze.outputs.frozen == 'true'
         continue-on-error: true
         run: |
           echo "Generating Apex recovery script..."
@@ -55,7 +78,6 @@ jobs:
                   
                   if ((Boolean)genericUl.get('IsFrozen')) {
                       genericUl.put('IsFrozen', false);
-                      
                       update genericUl;
                       System.debug('SUCCESS: User was unfrozen.');
                   } else {
