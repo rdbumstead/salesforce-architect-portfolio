@@ -24,6 +24,12 @@ jobs:
 
       - name: Ensure Owner User is Unfrozen
         run: |
-          sed -i "s/___TARGET_USERNAME___/${{ secrets.SFDX_USERNAME }}/g" scripts/unfreeze.apex
+          USER_LOGIN_ID=$(sf data query --query "SELECT Id FROM UserLogin WHERE UserId IN (SELECT Id FROM User WHERE Username = '${{ secrets.SFDX_USERNAME }}')" --json --target-org portfolio | jq -r '.result.records[0].Id')
 
-          sf apex run --file scripts/unfreeze.apex --target-org portfolio
+          echo "Found UserLogin ID: $USER_LOGIN_ID"
+
+          if [ "$USER_LOGIN_ID" != "null" ] && [ -n "$USER_LOGIN_ID" ]; then
+             sf data update record --sobject UserLogin --record-id "$USER_LOGIN_ID" --values "IsFrozen=false" --target-org portfolio
+          else
+             echo "Warning: Target user not found. Skipping unfreeze."
+          fi
