@@ -2,26 +2,21 @@ name: Daily Org Heartbeat
 
 on:
   schedule:
-    # Runs at 8:00 UTC every day
     - cron: "0 8 * * *"
   workflow_dispatch:
 
 jobs:
-  login-and-ping:
+  heartbeat:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Salesforce CLI
-        run: npm install @salesforce/cli --global
+      - uses: actions/checkout@v3
 
-      - name: Authenticate via JWT (Integration User)
-        run: |
-          echo "${{ secrets.SFDX_JWT_KEY }}" > portfolio.key
-          sf org login jwt \
-            --client-id ${{ secrets.SFDX_CLIENT_ID }} \
-            --jwt-key-file portfolio.key \
-            --username ${{ secrets.SFDX_INTEGRATION_USERNAME }} \
-            --alias portfolio \
-            --instance-url https://login.salesforce.com
+      - name: Setup Salesforce
+        uses: ./.github/actions/setup-sf
+        with:
+          jwt_key: ${{ secrets.SFDX_JWT_KEY }}
+          client_id: ${{ secrets.SFDX_CLIENT_ID }}
+          username: ${{ secrets.SFDX_INTEGRATION_USERNAME }}
 
       - name: Execute Heartbeat Query
         run: sf data query --query "SELECT Id FROM User LIMIT 1" --target-org portfolio
