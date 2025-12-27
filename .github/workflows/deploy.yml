@@ -4,103 +4,46 @@ on:
   push:
     branches: [main]
     paths:
-      - "packages/shared-modules/**"
-      - "packages/integration-api/**"
-      - "packages/employer-hub-demo/**"
-      - "packages/portfolio-site/**"
+      - "packages/**"
       - "sfdx-project.json"
-
   workflow_dispatch:
     inputs:
       deployment_mode:
-        description: 'Deployment Mode'
+        description: "Deployment Mode"
         required: true
-        default: 'delta'
+        default: "delta"
         type: choice
-        options:
-        - delta
-        - full
+        options: [delta, full]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # ------------------------------------------------------------------
-      # 1. Checkout Code
-      # ------------------------------------------------------------------
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # ------------------------------------------------------------------
-      # 2. Salesforce Setup
-      # ------------------------------------------------------------------
-      - name: Install Salesforce CLI
-        run: npm install @salesforce/cli --global
+      - name: Setup Salesforce & Tools
+        uses: ./.github/actions/setup-sf
+        with:
+          jwt_key: ${{ secrets.SFDX_JWT_KEY }}
+          client_id: ${{ secrets.SFDX_CLIENT_ID }}
+          username: ${{ secrets.SFDX_USERNAME }}
 
-      - name: Install sfdx-git-delta
-        run: echo y | sf plugins install sfdx-git-delta
-
-      - name: Authenticate via JWT
-        run: |
-          echo "${{ secrets.SFDX_JWT_KEY }}" > portfolio.key
-          sf org login jwt \
-            --client-id ${{ secrets.SFDX_CLIENT_ID }} \
-            --jwt-key-file portfolio.key \
-            --username ${{ secrets.SFDX_USERNAME }} \
-            --alias portfolio \
-            --instance-url https://login.salesforce.com
-
-      # ------------------------------------------------------------------
-      # 3. Generate Delta (Skipped if Manual Full Deploy)
-      # ------------------------------------------------------------------
       - name: Generate Delta
-        if: ${{ github.event_name == 'push' || inputs.deployment_mode == 'delta' }}
+        if: github.event_name == 'push' || github.event.inputs.deployment_mode == 'delta'
         run: |
           mkdir -p changed
+          FROM_SHA="${{ github.event.before }}"
+          [ -z "$FROM_SHA" ] || [ "$FROM_SHA" = "0000000000000000000000000000000000000000" ] && FROM_SHA="HEAD~1"
+          sf sgd source delta --to "HEAD" --from "$FROM_SHA" --output changed --source packages --generate-delta
 
-          if [ "${{ github.event_name }}" == "push" ]; then
-            FROM_SHA="${{ github.event.before }}"
-          else
-            FROM_SHA="HEAD~1"
-          fi
-
-          if [ -z "$FROM_SHA" ] || [ "$FROM_SHA" = "0000000000000000000000000000000000000000" ]; then
-            echo "First push or manual trigger detected. Using default HEAD~1 or empty tree."
-            FROM_SHA="HEAD~1"
-          fi
-
-          echo "Generating delta from $FROM_SHA to HEAD..."
-
-          sf sgd source delta \
-            --to "HEAD" \
-            --from "$FROM_SHA" \
-            --output changed \
-            --source packages \
-            --generate-delta
-
-      # ------------------------------------------------------------------
-      # 4. Deploy to Production
-      # ------------------------------------------------------------------
-      - name: Deploy
+      - name: Execute Deployment
         run: |
-          if [ "${{ inputs.deployment_mode }}" == "full" ]; then
-            echo "MANUAL TRIGGER DETECTED: Executing Full Source Deployment..."
-            
-            sf project deploy start \
-              --source-dir packages \
-              --target-org portfolio \
-              --wait 60
-          
+          if [ "${{ github.event.inputs.deployment_mode }}" == "full" ]; then
+            sf project deploy start --source-dir packages --target-org portfolio --wait 60
           elif [ -s changed/package/package.xml ]; then
-            echo "Changes detected. Executing Delta Deployment..."
-            
-            sf project deploy start \
-              --manifest changed/package/package.xml \
-              --post-destructive-changes changed/destructiveChanges/destructiveChanges.xml \
-              --target-org portfolio \
-              --wait 20
-          
+            sf project deploy start --manifest changed/package/package.xml --post-destructive-changes changed/destructiveChanges/destructiveChanges.xml --target-org portfolio --wait 30
           else
-            echo "No Salesforce metadata changes detected. Skipping deploy."
+            echo "No metadata changes detected."
           fi
