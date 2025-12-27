@@ -50,7 +50,9 @@ To define the "Definition of Done" for this portfolio, the following metrics mus
 - [ ] "Smart Docs" component receives test Platform Event and updates UI without refresh
 - [ ] Mobile responsive layout passes manual verification on iOS Safari and Android Chrome
 
-### 3. Target State Acceptance — Phase 8 (Q2 2026)
+### 3. Target State Acceptance — Phase 8 (Q2 2026) — _Not in MVP_
+
+_Note: These criteria are designed today for Q2 2026 implementation to demonstrate architectural forward-planning._
 
 - [ ] API Lab toggle switches to "Enterprise Mode" (AWS Lambda Function URL)
 - [ ] Live payload counter shows ≥ 85% reduction vs native mode

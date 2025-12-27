@@ -75,7 +75,7 @@ graph LR
     SF_GQL --> DB[(Custom Objects)]
 
     %% DOOR 2 - External Polyglot BFF Phase 8 Q2 2026
-    LWR -->|GraphQL or REST x-api-key header| Lambda[AWS Lambda Polyglot Gateway Function URL]
+    LWR -->|Phase 8 Q2 2026 - Design Complete| Lambda[AWS Lambda Polyglot Gateway]
 
     %% Classic Apex REST path
     LWR -->|Apex REST| Apex[Apex Runtime]

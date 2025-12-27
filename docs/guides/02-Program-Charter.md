@@ -54,9 +54,9 @@ This is not a static website. It is a live, observable platform governed by prod
 - Skill Graph, Roadmap, and Project Gallery all use native wire adapter for sub-250 ms LCP
 - No external dependencies required
 
-#### Target Enterprise State — Phase 8 (Q2 2026)
+#### Target Enterprise State — Phase 8 (Q2 2026) — _Design Complete / Implementation Deferred_
 
-- AWS Lambda Polyglot Gateway (Function URL) fully designed and documented today (see SAS 1.1 & 5.3)
+- AWS Lambda Polyglot Gateway (Function URL) "Door 2" fully designed (see SAS 1.1 & 5.3).
 - Implementation deferred to guarantee on-time MVP launch
 - Zero impact on cost, timeline, or performance of MVP
 
@@ -204,6 +204,7 @@ The delivery is organized into four parallel execution tracks:
 - **Smart Documentation:** Implement c-smart-checklist using lightning/empApi to listen for Deployment_Event\_\_e and auto-complete governance checklists.
 
 **Phase 8: Multi-Cloud & FinOps — Hybrid GraphQL Strategy (Q2 2026)**
+_Design artifacts complete; implementation begins post-launch._
 
 - Native GraphQL Verification
   - Confirm Skill Graph, Roadmap, and Project Gallery all use lightning/uiGraphQLApi (already live in MVP)
