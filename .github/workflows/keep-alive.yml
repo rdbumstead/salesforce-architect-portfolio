@@ -41,45 +41,30 @@ jobs:
               String targetUsername = '${{ secrets.SFDX_USERNAME }}';
               System.debug('Heartbeat recovery for user: ' + targetUsername);
 
-              List<User> users = [
-                  SELECT Id
-                  FROM User
-                  WHERE Username = :targetUsername
-                  LIMIT 1
-              ];
+              List<User> users = [SELECT Id FROM User WHERE Username = :targetUsername LIMIT 1];
 
               if (users.isEmpty()) {
                   System.debug('WARN: Target user not found.');
                   return;
               }
-
-              UserLogin ul = [
-                  SELECT Id, IsFrozen
-                  FROM UserLogin
-                  WHERE UserId = :users[0].Id
-                  LIMIT 1
-              ];
-
-              if (ul.IsFrozen) {
-                  ul.IsFrozen = false;
-                  update ul;
-                  System.debug('SUCCESS: User was unfrozen.');
-              } else {
-                  System.debug('INFO: User already active.');
+                  
+              List<UserLogin> logins = [SELECT Id, IsFrozen FROM UserLogin WHERE UserId = :users[0].Id LIMIT 1];
+              
+              if (!logins.isEmpty()) {
+                  UserLogin ul = logins[0];
+                  if (ul.IsFrozen) {
+                      ul.put('IsFrozen', false);
+                      update ul;
+                      System.debug('SUCCESS: User was unfrozen.');
+                  } else {
+                      System.debug('INFO: User already active.');
+                  }
               }
 
           } catch (Exception e) {
-              System.debug(
-                  'ERROR: Unable to unfreeze user. ' +
-                  'Reason: ' + e.getMessage()
-              );
+              System.debug('WARNING: Unable to unfreeze user (likely permission issue). Error: ' + e.getMessage());
           }
           EOF
 
           echo "Executing Apex recovery..."
-          sf apex run \
-            --file unfreeze_owner.apex \
-            --target-org portfolio
-
-      - name: Heartbeat Complete
-        run: echo "Salesforce org heartbeat completed successfully."
+          sf apex run --file unfreeze_owner.apex --target-org portfolio
